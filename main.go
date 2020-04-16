@@ -44,6 +44,7 @@ func main() {
 		fmt.Println("   -h --help       Print help")
 		fmt.Println("   -b --bump       Bump files")
 		fmt.Println("   -r --recursive  List subdirectories recursively")
+		fmt.Println("   -f --force      Bump even if no previous frontmatter")
 		fmt.Println()
 		fmt.Println("If no files given, list all files")
 		fmt.Println()
@@ -73,7 +74,12 @@ func main() {
 			time := time.Now().UTC().Format(time.RFC3339)
 
 			if card.Properties == nil {
-				card.Properties = map[string]interface{}{}
+				if containsString(flags, "-f") || containsString(flags, "--force") {
+					card.Properties = map[string]interface{}{}
+				} else {
+					fmt.Println("No frontmatter in file, will not bump unless forced")
+					os.Exit(0)
+				}
 			}
 			if card.Frontmatter == "" {
 				card.Frontmatter = "toml"
