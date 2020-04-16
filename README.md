@@ -7,7 +7,7 @@ When having reviewed a document, and being satisfied that it is correct, you can
 
 ## Usage
 
-```bash
+```
 Usage: ./bump-card [options] [files...]
 
 Options:
