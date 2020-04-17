@@ -1,25 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/BurntSushi/toml"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/jedthehumanoid/card-cabinet"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"time"
 )
-
-// Card is a text with properties, meant for displaying on a board.
-type Card struct {
-	Title       string                 `json:"title"`
-	Contents    string                 `json:"contents"`
-	Properties  map[string]interface{} `json:"properties,omitempty"`
-	Frontmatter string                 `json:"frontmatter,omitempty"`
-}
 
 func getArguments(args []string) ([]string, []string) {
 	arguments := []string{}
@@ -61,7 +50,7 @@ func main() {
 	} else {
 		files = arguments
 	}
-	cards := readCards(files)
+	cards := cardcabinet.ReadCards(files)
 
 	if containsString(flags, "-b") || containsString(flags, "--bump") {
 		if len(arguments) == 0 {
@@ -87,7 +76,7 @@ func main() {
 
 			card.Properties["bumped"] = time
 			contents := card.Contents
-			contents = MarshalFrontmatter(card, true) + "\n" + contents
+			contents = cardcabinet.MarshalFrontmatter(card, true) + "\n" + contents
 			err := ioutil.WriteFile(card.Title, []byte(contents), 0644)
 			if err != nil {
 				panic(err)
@@ -111,79 +100,4 @@ func main() {
 		}
 		fmt.Println()
 	}
-}
-
-// ReadCardFile takes a file path, reading file in to a card.
-func readCard(path string) (Card, error) {
-	var card Card
-
-	card.Title = path
-
-	contents, err := ioutil.ReadFile(filepath.FromSlash(path))
-	if err != nil {
-		return card, err
-	}
-	frontmatter, raw, b := getFrontmatter(contents)
-	card.Frontmatter = frontmatter
-
-	card.Contents = strings.TrimPrefix(string(contents), string(raw))
-	card.Contents = strings.TrimSpace(card.Contents)
-
-	switch frontmatter {
-	case "yaml":
-		err = yaml.Unmarshal(b, &card.Properties)
-		return card, err
-	case "toml":
-		_, err = toml.Decode(string(b), &card.Properties)
-		return card, err
-	}
-	return card, nil
-}
-
-func isCard(file string) bool {
-	return strings.HasSuffix(file, ".md")
-}
-
-func readCards(files []string) []Card {
-	cards := []Card{}
-
-	for _, file := range files {
-		if !isCard(file) {
-			continue
-		}
-		card, err := readCard(file)
-		if err != nil {
-			panic(err)
-		}
-		cards = append(cards, card)
-	}
-	return cards
-}
-
-func MarshalFrontmatter(card Card, fences bool) string {
-	ret := ""
-
-	switch card.Frontmatter {
-	case "yaml":
-		b, _ := yaml.Marshal(card.Properties)
-		frontmatter := strings.TrimSpace(string(b))
-		if frontmatter != "{}" {
-			ret = frontmatter
-			if fences {
-				ret = "---\n" + ret + "\n---"
-			}
-		}
-	case "toml":
-		buf := new(bytes.Buffer)
-		toml.NewEncoder(buf).Encode(card.Properties)
-		frontmatter := strings.TrimSpace(buf.String())
-		if frontmatter != "" {
-			ret = frontmatter
-			if fences {
-				ret = "+++\n" + ret + "\n+++"
-			}
-		}
-	}
-
-	return ret
 }
