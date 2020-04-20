@@ -2,25 +2,7 @@ package main
 
 import (
 	"io/ioutil"
-	"os"
-	"path/filepath"
 )
-
-// FindFiles is like find
-func findFiles(path string) []string {
-	files := []string{}
-	filepath.Walk(path,
-		func(file string, f os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if !f.IsDir() {
-				files = append(files, file)
-			}
-			return nil
-		})
-	return files
-}
 
 func readDir(dir string) []string {
 	ret := []string{}

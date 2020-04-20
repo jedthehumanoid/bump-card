@@ -43,7 +43,7 @@ func main() {
 	files := []string{}
 	if len(arguments) == 0 {
 		if containsString(flags, "-r") || containsString(flags, "--recursive") {
-			files = findFiles(".")
+			files = cardcabinet.FindFiles(".")
 		} else {
 			files = readDir(".")
 		}
@@ -76,7 +76,7 @@ func main() {
 
 			card.Properties["bumped"] = time
 			contents := card.Contents
-			contents = cardcabinet.MarshalFrontmatter(card, true) + "\n" + contents
+			contents = card.MarshalFrontmatter(true) + "\n" + contents
 			err := ioutil.WriteFile(card.Title, []byte(contents), 0644)
 			if err != nil {
 				panic(err)
