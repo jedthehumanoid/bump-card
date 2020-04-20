@@ -50,8 +50,8 @@ func main() {
 	} else {
 		files = arguments
 	}
-	cards := cardcabinet.ReadCards(files)
 
+	cards := cardcabinet.ReadCards(files)
 	if containsString(flags, "-b") || containsString(flags, "--bump") {
 		if len(arguments) == 0 {
 			fmt.Println("Will not bump all files implicitly")
